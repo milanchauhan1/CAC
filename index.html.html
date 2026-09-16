@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  html{color-scheme:light dark;}
+  body{margin:0;}
+  img{max-width:100%;}
+  [hidden]{display:none!important;}
+</style>
+<title>Culture Clash Jeopardy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --ground:#06102C;
+    --ground-2:#0B1A45;
+    --tile:#12307E;
+    --tile-hi:#1B47B4;
+    --tile-used:#091638;
+    --gold:#F3B340;
+    --gold-deep:#B9820F;
+    --cream:#FFF6E6;
+    --coral:#E4564A;
+    --mint:#4FC79F;
+    --line:rgba(255,246,230,.16);
+    --line-soft:rgba(255,246,230,.08);
+    color-scheme: dark;
+  }
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #12275F 0%, rgba(18,39,95,0) 60%),
+      var(--ground);
+    color:var(--cream);
+    font-family:"Barlow","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding-block:14px 18px;
+    padding-left:16px;
+    padding-right:16px;
+    box-sizing:border-box;
+    max-width:1700px;
+    margin:0 auto;
+  }
+
+  /* ---------- header ---------- */
+  .top{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex;flex-direction:column;gap:2px;}
+  .eyebrow{
+    font-family:"Barlow",sans-serif;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--gold);
+  }
+  h1{
+    font-family:"Anton",Impact,"Barlow Condensed",sans-serif;
+    font-weight:400;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    font-size:clamp(26px,3.4vw,46px);
+    line-height:.95;
+    margin:0;
+    text-wrap:balance;
+    color:var(--cream);
+  }
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;}
+  button{font:inherit;cursor:pointer;}
+  .btn{
+    background:transparent;
+    color:var(--cream);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:9px 14px;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    transition:background .15s ease,border-color .15s ease,color .15s ease;
+  }
+  .btn:hover{background:rgba(255,246,230,.08);border-color:rgba(255,246,230,.38);}
+  .btn.gold{border-color:var(--gold-deep);color:var(--gold);}
+  .btn.gold:hover{background:rgba(243,179,64,.14);border-color:var(--gold);}
+  .btn.danger{color:#F1A49D;border-color:rgba(228,86,74,.5);}
+  .btn.danger:hover{background:rgba(228,86,74,.16);}
+  .btn:disabled{opacity:.35;cursor:default;}
+  .btn:focus-visible,.tile:focus-visible,.name:focus-visible,input:focus-visible{
+    outline:2px solid var(--gold);outline-offset:2px;
+  }
+
+  /* ---------- board ---------- */
+  .boardscroll{flex:1 1 auto;overflow-x:auto;overflow-y:hidden;}
+  .board{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    grid-auto-rows:minmax(58px,1fr);
+    gap:6px;
+    min-width:820px;
+    height:100%;
+  }
+  .cat{
+    background:linear-gradient(180deg,var(--ground-2),#081338);
+    border:1px solid var(--line-soft);
+    border-bottom:2px solid var(--gold-deep);
+    display:flex;align-items:center;justify-content:center;
+    text-align:center;
+    padding:10px 8px;
+    font-family:"Barlow Condensed","Barlow",sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    line-height:1.04;
+    font-size:clamp(14px,1.45vw,23px);
+    color:var(--gold);
+    text-wrap:balance;
+  }
+  .tile{
+    background:var(--tile);
+    border:none;
+    border-radius:2px;
+    color:var(--gold);
+    font-family:"Anton",Impact,sans-serif;
+    font-size:clamp(20px,2.7vw,44px);
+    letter-spacing:.01em;
+    text-shadow:0 2px 0 rgba(0,0,0,.45);
+    display:flex;align-items:center;justify-content:center;
+    transition:background .12s ease,transform .12s ease;
+    font-variant-numeric:tabular-nums;
+  }
+  .tile:hover{background:var(--tile-hi);transform:translateY(-1px);}
+  .tile[data-used="1"]{
+    background:var(--tile-used);
+    color:transparent;
+    cursor:default;
+    transform:none;
+    box-shadow:inset 0 0 0 1px var(--line-soft);
+  }
+
+  /* ---------- scoreboard ---------- */
+  .scores{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+  }
+  .team{
+    background:var(--ground-2);
+    border:1px solid var(--line-soft);
+    border-top:3px solid var(--tm);
+    border-radius:3px;
+    padding:9px 11px 10px;
+    display:flex;flex-direction:column;gap:2px;
+    min-width:0;
+  }
+  .name{
+    background:transparent;border:none;padding:0;
+    color:var(--cream);
+    font-family:"Barlow",sans-serif;
+    font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    width:100%;
+    text-overflow:ellipsis;
+  }
+  .score{
+    font-family:"Anton",Impact,sans-serif;
+    font-size:clamp(24px,2.4vw,36px);
+    line-height:1.05;
+    font-variant-numeric:tabular-nums;
+    color:var(--gold);
+  }
+  .score.neg{color:var(--coral);}
+  .hint{
+    font-size:11.5px;
+    color:rgba(255,246,230,.45);
+    letter-spacing:.04em;
+  }
+  .hint kbd{
+    font-family:"Barlow",sans-serif;
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:1px 5px;
+    font-size:10.5px;
+    color:rgba(255,246,230,.75);
+  }
+
+  /* ---------- clue overlay ---------- */
+  .overlay{
+    position:fixed;inset:0;
+    background:linear-gradient(180deg,#0A1A48,#050D24);
+    z-index:50;
+    display:flex;flex-direction:column;
+    padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(env(safe-area-inset-bottom,0px) + 18px);
+    box-sizing:border-box;
+  }
+  .ov-head{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--gold);
+    flex:0 0 auto;
+  }
+  .ov-body{
+    flex:1 1 auto;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(18px,3.5vh,40px);
+    text-align:center;
+    max-width:1200px;
+    margin:0 auto;
+    width:100%;
+  }
+  .clue{
+    font-family:"Barlow Condensed","Barlow",sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    font-size:clamp(28px,4.6vw,66px);
+    line-height:1.1;
+    letter-spacing:.01em;
+    text-wrap:balance;
+    margin:0;
+    color:var(--cream);
+  }
+  .answer{
+    font-family:"Barlow Condensed","Barlow",sans-serif;
+    font-weight:700;
+    font-size:clamp(24px,3.4vw,48px);
+    line-height:1.12;
+    color:var(--gold);
+    text-wrap:balance;
+    margin:0;
+    padding-top:clamp(12px,2vh,22px);
+    border-top:1px solid rgba(243,179,64,.32);
+    width:min(100%,900px);
+  }
+  .splash{
+    font-family:"Anton",Impact,sans-serif;
+    font-size:clamp(40px,8vw,120px);
+    line-height:.92;
+    color:var(--gold);
+    text-transform:uppercase;
+    margin:0;
+    text-shadow:0 4px 0 rgba(0,0,0,.4);
+  }
+  .sub{
+    font-size:clamp(13px,1.3vw,17px);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:rgba(255,246,230,.6);
+    margin:0;
+  }
+  .ov-foot{flex:0 0 auto;display:flex;flex-direction:column;gap:10px;align-items:center;}
+  .award{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+    width:100%;
+    max-width:1100px;
+  }
+  .award .card{
+    background:rgba(255,246,230,.05);
+    border:1px solid var(--line-soft);
+    border-top:3px solid var(--tm);
+    border-radius:3px;
+    padding:8px 9px 9px;
+    display:flex;flex-direction:column;gap:7px;
+    min-width:0;
+  }
+  .award .who{
+    font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    color:var(--cream);
+  }
+  .award .row{display:flex;gap:6px;}
+  .mark{
+    flex:1 1 0;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:transparent;
+    padding:8px 4px;
+    font-size:15px;font-weight:700;
+    color:var(--cream);
+    font-variant-numeric:tabular-nums;
+  }
+  .mark.yes{border-color:rgba(79,199,159,.5);color:var(--mint);}
+  .mark.yes:hover{background:rgba(79,199,159,.16);}
+  .mark.no{border-color:rgba(228,86,74,.45);color:#F1A49D;}
+  .mark.no:hover{background:rgba(228,86,74,.16);}
+  .wagers{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;
+    width:100%;max-width:1100px;
+  }
+  .wagers label{
+    background:rgba(255,246,230,.05);
+    border:1px solid var(--line-soft);
+    border-top:3px solid var(--tm);
+    border-radius:3px;
+    padding:8px 10px 10px;
+    display:flex;flex-direction:column;gap:5px;
+    font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    min-width:0;
+  }
+  .wagers .cap{color:rgba(255,246,230,.45);letter-spacing:.06em;text-transform:none;font-weight:500;font-size:11px;}
+  .wagers input{
+    font-family:"Anton",Impact,sans-serif;
+    font-size:22px;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line);
+    color:var(--gold);
+    padding:2px 0 3px;
+    width:100%;
+    font-variant-numeric:tabular-nums;
+  }
+  .running{
+    display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
+    font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    color:rgba(255,246,230,.55);
+  }
+  .running b{color:var(--gold);font-family:"Anton",sans-serif;font-weight:400;letter-spacing:0;}
+
+  @media (max-width:760px){
+    .scores{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .award,.wagers{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .hint{display:none;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important;}
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <span class="eyebrow">Cultural Awareness Club &middot; Fremd</span>
+      <h1>Culture Clash Jeopardy</h1>
+    </div>
+    <div class="toolbar">
+      <button class="btn gold" id="finalBtn">Final round</button>
+      <button class="btn" id="undoBtn">Undo</button>
+      <button class="btn danger" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="boardscroll">
+    <div class="board" id="board"></div>
+  </div>
+
+  <div class="scores" id="scores"></div>
+
+  <p class="hint">Click a tile to open a clue &middot; <kbd>Space</kbd> reveals the response &middot; <kbd>1</kbd>&ndash;<kbd>4</kbd> awards a team, <kbd>Shift</kbd>+<kbd>1</kbd>&ndash;<kbd>4</kbd> deducts &middot; <kbd>Esc</kbd> closes. Team names are editable &mdash; click one and type.</p>
+</div>
+
+<div class="overlay" id="overlay" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var TEAM_COLORS = ["#F3B340","#4FC79F","#E4564A","#7FA6FF"];
+
+  var CATEGORIES = [
+    { name: "Street Food", clues: [
+      { q: "Rolled in mayo, cotija and chili-lime, this Mexican corn-on-the-cob is renamed esquites once it is cut off the cob into a cup.", a: "Elote" },
+      { q: "Delhi calls it golgappa and Kolkata calls it puchka; Mumbai uses this name for the crisp hollow sphere filled with spiced water.", a: "Pani puri" },
+      { q: "From Osaka, this snack is a ball of batter with octopus inside, brushed with sauce and buried in bonito flakes.", a: "Takoyaki" },
+      { q: "Belgium insists these were being fried in the Meuse valley long before France got the credit; locals eat them from a paper cone with mayo.", a: "Frites (fries)" },
+      { q: "Senegal's thieboudienne is considered the ancestor of this one-pot rice dish that Nigeria and Ghana refuse to stop arguing over.", a: "Jollof rice" }
+    ]},
+    { name: "Global Charts", clues: [
+      { q: "This group's fandom calls itself ARMY, and “Dynamite” was their first single recorded entirely in English.", a: "BTS" },
+      { q: "He had been recording for two decades before “Despacito” made him a global streaming record-holder in 2017.", a: "Luis Fonsi" },
+      { q: "Burna Boy, Wizkid and Tems all came out of this Nigerian genre, whose name gets confused with Fela Kuti's older Afrobeat.", a: "Afrobeats" },
+      { q: "His “Un Verano Sin Ti” was the first all-Spanish album nominated for the Grammy for Album of the Year.", a: "Bad Bunny", dd: true },
+      { q: "Her Lebanese grandparents are the reason for the belly-dance moves she has used since “Ojos Así.”", a: "Shakira" }
+    ]},
+    { name: "Subtitles Required", clues: [
+      { q: "This South Korean survival series became Netflix's biggest debut ever in 2021.", a: "Squid Game" },
+      { q: "In 2020 this Bong Joon-ho film became the first non-English movie to win Best Picture.", a: "Parasite" },
+      { q: "Studio Ghibli's Oscar winner follows a girl named Chihiro who gets stuck working in a bathhouse for spirits.", a: "Spirited Away" },
+      { q: "Red jumpsuits, Salvador Dalí masks, and a crew named after cities — this Spanish series is “La Casa de Papel” at home.", a: "Money Heist" },
+      { q: "This 2022 Telugu action epic won an Oscar for “Naatu Naatu”; its title is a single letter, three times.", a: "RRR" }
+    ]},
+    { name: "Say It Back", clues: [
+      { q: "This Hawaiian word works as both hello and goodbye.", a: "Aloha" },
+      { q: "Said in Japan right before eating, this phrase thanks everyone involved in the meal.", a: "Itadakimasu" },
+      { q: "Candles, blankets, warm drinks: this Danish word for cozy contentment, pronounced “HOO-guh,” became a lifestyle trend around 2016.", a: "Hygge" },
+      { q: "Arabic speakers attach this phrase, meaning “if God wills it,” to almost anything about the future.", a: "Inshallah" },
+      { q: "German stacks its words for “harm” and “joy” to name the pleasure you take in someone else's misfortune.", a: "Schadenfreude" }
+    ]},
+    { name: "Fits &amp; Fabrics", clues: [
+      { q: "Five to nine yards of unstitched cloth, draped and worn daily across South Asia.", a: "A sari" },
+      { q: "In Scotland, the pattern on this pleated garment traditionally identifies your clan.", a: "A kilt (tartan)" },
+      { q: "Nigerians buy this bold West African wax-print fabric by the yard; it shares its name with the capital of Turkey.", a: "Ankara (wax print)" },
+      { q: "A kimono is held shut by this wide sash tied in a bow at the back — Star Wars fans know the word from a certain Kenobi.", a: "An obi" },
+      { q: "Indonesia's UNESCO-listed fabric art uses hot wax to block the dye; the word now names those swirly prints everywhere.", a: "Batik" }
+    ]},
+    { name: "Game On", clues: [
+      { q: "The world's most popular sport, called football almost everywhere except the United States.", a: "Soccer" },
+      { q: "Bats, wickets and overs make this India's most-watched sport.", a: "Cricket" },
+      { q: "Wrestlers in this Japanese national sport try to shove each other out of a clay ring called a dohyo.", a: "Sumo" },
+      { q: "New Zealand's All Blacks perform this Māori chant and dance to challenge the other team before every match.", a: "The haka" },
+      { q: "Fists, elbows, knees and shins are all legal in this national sport of Thailand, whose name means “Thai boxing.”", a: "Muay Thai" }
+    ]}
+  ];
+
+  var FINAL = {
+    cat: "World Heritage",
+    q: "In 2010 UNESCO added its first national cuisines to the Intangible Cultural Heritage list: French gastronomy and the traditional cuisine of this country.",
+    a: "Mexico"
+  };
+
+  var VALUES = [200,400,600,800,1000];
+
+  var state = {
+    names: ["Team 1","Team 2","Team 3","Team 4"],
+    scores: [0,0,0,0],
+    used: {},
+    log: []
+  };
+
+  var KEY = "culture-clash-jeopardy-v1";
+  function save(){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+  }
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return;
+      var s = JSON.parse(raw);
+      if(s && Array.isArray(s.scores) && s.scores.length === 4){
+        state.scores = s.scores.map(function(n){ return Number(n)||0; });
+        if(Array.isArray(s.names) && s.names.length === 4) state.names = s.names.map(String);
+        state.used = (s.used && typeof s.used === "object") ? s.used : {};
+        state.log = Array.isArray(s.log) ? s.log : [];
+      }
+    } catch(e){}
+  }
+
+  var board = document.getElementById("board");
+  var scores = document.getElementById("scores");
+  var overlay = document.getElementById("overlay");
+  var undoBtn = document.getElementById("undoBtn");
+  var resetBtn = document.getElementById("resetBtn");
+
+  function money(n){
+    return (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US");
+  }
+
+  /* ---------- board ---------- */
+  function renderBoard(){
+    board.innerHTML = "";
+    CATEGORIES.forEach(function(c){
+      var h = document.createElement("div");
+      h.className = "cat";
+      h.innerHTML = c.name;
+      board.appendChild(h);
+    });
+    VALUES.forEach(function(v, r){
+      CATEGORIES.forEach(function(c, ci){
+        var id = ci + "-" + r;
+        var b = document.createElement("button");
+        b.className = "tile";
+        b.type = "button";
+        b.textContent = "$" + v;
+        b.setAttribute("aria-label", c.name.replace("&amp;","and") + ", $" + v);
+        if(state.used[id]){
+          b.dataset.used = "1";
+          b.disabled = true;
+        } else {
+          b.addEventListener("click", function(){ openClue(ci, r); });
+        }
+        board.appendChild(b);
+      });
+    });
+  }
+
+  /* ---------- scoreboard ---------- */
+  function renderScores(){
+    scores.innerHTML = "";
+    state.names.forEach(function(nm, i){
+      var d = document.createElement("div");
+      d.className = "team";
+      d.style.setProperty("--tm", TEAM_COLORS[i]);
+
+      var input = document.createElement("input");
+      input.className = "name";
+      input.id = "team-name-" + i;
+      input.value = nm;
+      input.maxLength = 18;
+      input.setAttribute("aria-label", "Name for team " + (i+1));
+      input.addEventListener("input", function(){
+        state.names[i] = input.value || ("Team " + (i+1));
+        save();
+      });
+
+      var sc = document.createElement("div");
+      sc.className = "score" + (state.scores[i] < 0 ? " neg" : "");
+      sc.textContent = money(state.scores[i]);
+
+      d.appendChild(input);
+      d.appendChild(sc);
+      scores.appendChild(d);
+    });
+    undoBtn.disabled = state.log.length === 0;
+  }
+
+  function adjust(team, delta){
+    state.scores[team] += delta;
+    state.log.push({ t: team, d: delta });
+    renderScores();
+    save();
+  }
+
+  undoBtn.addEventListener("click", function(){
+    var last = state.log.pop();
+    if(!last) return;
+    state.scores[last.t] -= last.d;
+    renderScores();
+    save();
+  });
+
+  var resetArmed = false;
+  resetBtn.addEventListener("click", function(){
+    if(!resetArmed){
+      resetArmed = true;
+      resetBtn.textContent = "Erase everything?";
+      setTimeout(function(){
+        resetArmed = false;
+        resetBtn.textContent = "Reset";
+      }, 3500);
+      return;
+    }
+    resetArmed = false;
+    resetBtn.textContent = "Reset";
+    state.scores = [0,0,0,0];
+    state.used = {};
+    state.log = [];
+    renderBoard();
+    renderScores();
+    save();
+  });
+
+  /* ---------- overlay ---------- */
+  var ov = null; // active overlay controller
+
+  function closeOverlay(){
+    overlay.hidden = true;
+    overlay.innerHTML = "";
+    ov = null;
+    renderBoard();
+    renderScores();
+    save();
+  }
+
+  function shell(eyebrow, rightLabel){
+    overlay.innerHTML = "";
+    overlay.hidden = false;
+    var head = document.createElement("div");
+    head.className = "ov-head";
+    var l = document.createElement("span");
+    l.innerHTML = eyebrow;
+    var close = document.createElement("button");
+    close.className = "btn";
+    close.type = "button";
+    close.textContent = rightLabel || "Close";
+    close.addEventListener("click", closeOverlay);
+    head.appendChild(l);
+    head.appendChild(close);
+
+    var body = document.createElement("div");
+    body.className = "ov-body";
+    var foot = document.createElement("div");
+    foot.className = "ov-foot";
+
+    overlay.appendChild(head);
+    overlay.appendChild(body);
+    overlay.appendChild(foot);
+    return { body: body, foot: foot };
+  }
+
+  function awardRow(value, onAward){
+    var grid = document.createElement("div");
+    grid.className = "award";
+    state.names.forEach(function(nm, i){
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--tm", TEAM_COLORS[i]);
+      var who = document.createElement("div");
+      who.className = "who";
+      who.textContent = nm;
+      var row = document.createElement("div");
+      row.className = "row";
+      var yes = document.createElement("button");
+      yes.className = "mark yes";
+      yes.type = "button";
+      yes.textContent = "+" + money(value).replace("$","$");
+      yes.addEventListener("click", function(){ onAward(i, value); });
+      var no = document.createElement("button");
+      no.className = "mark no";
+      no.type = "button";
+      no.textContent = "−" + money(value);
+      no.addEventListener("click", function(){ onAward(i, -value); });
+      row.appendChild(yes);
+      row.appendChild(no);
+      card.appendChild(who);
+      card.appendChild(row);
+      grid.appendChild(card);
+    });
+    return grid;
+  }
+
+  function runningLine(){
+    var d = document.createElement("div");
+    d.className = "running";
+    state.names.forEach(function(nm, i){
+      var s = document.createElement("span");
+      s.innerHTML = nm + " <b>" + money(state.scores[i]) + "</b>";
+      d.appendChild(s);
+    });
+    return d;
+  }
+
+  function openClue(ci, r){
+    var cat = CATEGORIES[ci];
+    var clue = cat.clues[r];
+    var value = VALUES[r];
+    var id = ci + "-" + r;
+    state.used[id] = 1;
+
+    if(clue.dd){
+      dailyDouble(cat, clue, value, id);
+      return;
+    }
+
+    var parts = shell(cat.name + " &middot; " + money(value));
+    var q = document.createElement("p");
+    q.className = "clue";
+    q.textContent = clue.q;
+    parts.body.appendChild(q);
+
+    var reveal = document.createElement("button");
+    reveal.className = "btn gold";
+    reveal.type = "button";
+    reveal.textContent = "Show the response";
+    parts.foot.appendChild(reveal);
+
+    var step = 0;
+    function advance(){
+      if(step !== 0) return;
+      step = 1;
+      var a = document.createElement("p");
+      a.className = "answer";
+      a.textContent = "What is " + clue.a + "?";
+      parts.body.appendChild(a);
+      parts.foot.innerHTML = "";
+      parts.foot.appendChild(awardRow(value, function(team, delta){
+        adjust(team, delta);
+        refreshRunning();
+      }));
+      var run = runningLine();
+      run.id = "run";
+      parts.foot.appendChild(run);
+    }
+    function refreshRunning(){
+      var old = document.getElementById("run");
+      if(!old) return;
+      var fresh = runningLine();
+      fresh.id = "run";
+      old.replaceWith(fresh);
+    }
+    reveal.addEventListener("click", advance);
+    ov = { advance: advance, award: function(i, sign){ if(step === 1){ adjust(i, sign * value); refreshRunning(); } } };
+  }
+
+  function dailyDouble(cat, clue, value, id){
+    var parts = shell(cat.name + " &middot; Daily Double");
+    var splash = document.createElement("p");
+    splash.className = "splash";
+    splash.textContent = "Daily Double";
+    var sub = document.createElement("p");
+    sub.className = "sub";
+    sub.textContent = "One team plays this alone. Pick the team, set the wager.";
+    parts.body.appendChild(splash);
+    parts.body.appendChild(sub);
+
+    var pick = document.createElement("div");
+    pick.className = "award";
+    var chosen = -1;
+    var wagerInput = null;
+
+    state.names.forEach(function(nm, i){
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--tm", TEAM_COLORS[i]);
+      var b = document.createElement("button");
+      b.className = "mark";
+      b.type = "button";
+      b.textContent = nm;
+      b.addEventListener("click", function(){
+        chosen = i;
+        askWager();
+      });
+      card.appendChild(b);
+      pick.appendChild(card);
+    });
+    parts.foot.appendChild(pick);
+
+    function askWager(){
+      parts.body.innerHTML = "";
+      var s2 = document.createElement("p");
+      s2.className = "splash";
+      s2.textContent = state.names[chosen];
+      var s3 = document.createElement("p");
+      s3.className = "sub";
+      s3.textContent = "Wager up to " + money(Math.max(1000, state.scores[chosen]));
+      parts.body.appendChild(s2);
+      parts.body.appendChild(s3);
+
+      var wrap = document.createElement("label");
+      wrap.className = "wagers";
+      wrap.style.maxWidth = "320px";
+      wrap.style.gridTemplateColumns = "1fr";
+      var inner = document.createElement("div");
+      inner.style.cssText = "background:rgba(255,246,230,.05);border:1px solid rgba(255,246,230,.08);border-top:3px solid " + TEAM_COLORS[chosen] + ";border-radius:3px;padding:8px 12px 10px;display:flex;flex-direction:column;gap:4px;";
+      var cap = document.createElement("span");
+      cap.className = "cap";
+      cap.textContent = "Wager";
+      wagerInput = document.createElement("input");
+      wagerInput.type = "number";
+      wagerInput.id = "dd-wager";
+      wagerInput.min = "0";
+      wagerInput.step = "100";
+      wagerInput.value = String(value);
+      wagerInput.setAttribute("aria-label", "Daily Double wager");
+      inner.appendChild(cap);
+      inner.appendChild(wagerInput);
+      wrap.appendChild(inner);
+      parts.body.appendChild(wrap);
+
+      parts.foot.innerHTML = "";
+      var go = document.createElement("button");
+      go.className = "btn gold";
+      go.type = "button";
+      go.textContent = "Show the clue";
+      go.addEventListener("click", showClue);
+      parts.foot.appendChild(go);
+      wagerInput.focus();
+      wagerInput.select();
+    }
+
+    function showClue(){
+      var wager = Math.max(0, Number(wagerInput && wagerInput.value) || 0);
+      parts.body.innerHTML = "";
+      var q = document.createElement("p");
+      q.className = "clue";
+      q.textContent = clue.q;
+      parts.body.appendChild(q);
+      parts.foot.innerHTML = "";
+      var reveal = document.createElement("button");
+      reveal.className = "btn gold";
+      reveal.type = "button";
+      reveal.textContent = "Show the response";
+      reveal.addEventListener("click", function(){ showAnswer(wager); });
+      parts.foot.appendChild(reveal);
+      ov = { advance: function(){ showAnswer(wager); } };
+    }
+
+    function showAnswer(wager){
+      var a = document.createElement("p");
+      a.className = "answer";
+      a.textContent = "What is " + clue.a + "?";
+      parts.body.appendChild(a);
+      parts.foot.innerHTML = "";
+      var row = document.createElement("div");
+      row.className = "award";
+      row.style.maxWidth = "520px";
+      var card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--tm", TEAM_COLORS[chosen]);
+      var who = document.createElement("div");
+      who.className = "who";
+      who.textContent = state.names[chosen] + " — " + money(wager) + " on the line";
+      var inner = document.createElement("div");
+      inner.className = "row";
+      var yes = document.createElement("button");
+      yes.className = "mark yes";
+      yes.type = "button";
+      yes.textContent = "Correct";
+      yes.addEventListener("click", function(){ adjust(chosen, wager); closeOverlay(); });
+      var no = document.createElement("button");
+      no.className = "mark no";
+      no.type = "button";
+      no.textContent = "Missed it";
+      no.addEventListener("click", function(){ adjust(chosen, -wager); closeOverlay(); });
+      inner.appendChild(yes);
+      inner.appendChild(no);
+      card.appendChild(who);
+      card.appendChild(inner);
+      row.appendChild(card);
+      parts.foot.appendChild(row);
+      ov = null;
+    }
+
+    ov = null;
+  }
+
+  /* ---------- final round ---------- */
+  document.getElementById("finalBtn").addEventListener("click", function(){
+    var parts = shell("Final Round &middot; " + FINAL.cat);
+    var splash = document.createElement("p");
+    splash.className = "splash";
+    splash.textContent = FINAL.cat;
+    var sub = document.createElement("p");
+    sub.className = "sub";
+    sub.textContent = "Every team writes a wager down before the clue is read.";
+    parts.body.appendChild(splash);
+    parts.body.appendChild(sub);
+
+    var grid = document.createElement("div");
+    grid.className = "wagers";
+    var inputs = [];
+    state.names.forEach(function(nm, i){
+      var lab = document.createElement("label");
+      lab.style.setProperty("--tm", TEAM_COLORS[i]);
+      var span = document.createElement("span");
+      span.textContent = nm;
+      var cap = document.createElement("span");
+      cap.className = "cap";
+      cap.textContent = "holds " + money(state.scores[i]);
+      var inp = document.createElement("input");
+      inp.type = "number";
+      inp.id = "final-wager-" + i;
+      inp.min = "0";
+      inp.step = "100";
+      inp.value = String(Math.max(0, state.scores[i]) > 0 ? Math.max(0, state.scores[i]) : 1000);
+      inp.setAttribute("aria-label", "Final wager for " + nm);
+      inputs.push(inp);
+      lab.appendChild(span);
+      lab.appendChild(cap);
+      lab.appendChild(inp);
+      grid.appendChild(lab);
+    });
+    parts.body.appendChild(grid);
+
+    var go = document.createElement("button");
+    go.className = "btn gold";
+    go.type = "button";
+    go.textContent = "Read the clue";
+    parts.foot.appendChild(go);
+
+    go.addEventListener("click", function(){
+      var wagers = inputs.map(function(inp){ return Math.max(0, Number(inp.value) || 0); });
+      parts.body.innerHTML = "";
+      var q = document.createElement("p");
+      q.className = "clue";
+      q.textContent = FINAL.q;
+      parts.body.appendChild(q);
+      parts.foot.innerHTML = "";
+      var reveal = document.createElement("button");
+      reveal.className = "btn gold";
+      reveal.type = "button";
+      reveal.textContent = "Show the response";
+      parts.foot.appendChild(reveal);
+
+      function showIt(){
+        var a = document.createElement("p");
+        a.className = "answer";
+        a.textContent = "What is " + FINAL.a + "?";
+        parts.body.appendChild(a);
+        parts.foot.innerHTML = "";
+        var row = document.createElement("div");
+        row.className = "award";
+        state.names.forEach(function(nm, i){
+          var card = document.createElement("div");
+          card.className = "card";
+          card.style.setProperty("--tm", TEAM_COLORS[i]);
+          var who = document.createElement("div");
+          who.className = "who";
+          who.textContent = nm + " · " + money(wagers[i]);
+          var inner = document.createElement("div");
+          inner.className = "row";
+          var yes = document.createElement("button");
+          yes.className = "mark yes";
+          yes.type = "button";
+          yes.textContent = "Right";
+          var no = document.createElement("button");
+          no.className = "mark no";
+          no.type = "button";
+          no.textContent = "Wrong";
+          yes.addEventListener("click", function(){ adjust(i, wagers[i]); yes.disabled = true; no.disabled = true; });
+          no.addEventListener("click", function(){ adjust(i, -wagers[i]); yes.disabled = true; no.disabled = true; });
+          inner.appendChild(yes);
+          inner.appendChild(no);
+          card.appendChild(who);
+          card.appendChild(inner);
+          row.appendChild(card);
+        });
+        parts.foot.appendChild(row);
+        ov = null;
+      }
+      reveal.addEventListener("click", showIt);
+      ov = { advance: showIt };
+    });
+    ov = null;
+  });
+
+  /* ---------- keyboard ---------- */
+  document.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) || "";
+    if(tag === "INPUT" || tag === "TEXTAREA") {
+      if(e.key === "Escape") e.target.blur();
+      return;
+    }
+    if(overlay.hidden) return;
+    if(e.key === "Escape"){ e.preventDefault(); closeOverlay(); return; }
+    if(e.key === " " || e.key === "Enter"){
+      if(ov && ov.advance){ e.preventDefault(); ov.advance(); }
+      return;
+    }
+    if(/^[1-4]$/.test(e.key) && ov && ov.award){
+      e.preventDefault();
+      ov.award(Number(e.key) - 1, e.shiftKey ? -1 : 1);
+    }
+  });
+
+  /* ---------- boot ---------- */
+  function start(){
+    load();
+    renderBoard();
+    renderScores();
+  }
+  start();
+
+  if(window.claude && window.claude.hot && window.claude.hot.snapshot){
+    window.claude.hot.snapshot(function(){ return state; });
+  }
+})();
+</script>
+
+</body>
+</html>
